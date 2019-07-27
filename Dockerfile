@@ -13,7 +13,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-FROM crops/yocto:ubuntu-14.04-base
+FROM crops/yocto:ubuntu-18.04-base
 
 USER root
 
@@ -27,7 +27,8 @@ COPY sudoers.usersetup /etc/
 # We remove the user because we add a new one of our own.
 # The usersetup user is solely for adding a new user that has the same uid,
 # as the workspace. 70 is an arbitrary *low* unused uid on debian.
-RUN userdel -r yoctouser && \
+#RUN chown -R 1000:1000 /workdir && \
+ RUN userdel -r yoctouser && \
     groupadd -g 70 usersetup && \
     useradd -N -m -u 70 -g 70 usersetup && \
     chmod 755 /usr/bin/usersetup.py \
@@ -36,6 +37,8 @@ RUN userdel -r yoctouser && \
         /usr/bin/restrict_groupadd.sh \
         /usr/bin/restrict_useradd.sh && \
     echo "#include /etc/sudoers.usersetup" >> /etc/sudoers
+
+#RUN git clone git@192.168.133.170:oss_fork/rnd-poky.git  
 
 USER usersetup
 ENV LANG=en_US.UTF-8
