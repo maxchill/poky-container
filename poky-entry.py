@@ -33,12 +33,16 @@ parser.add_argument("--id",
                     help='uid and gid to use for the user inside the '
                          'container. It should be in the form uid:gid')
 
-parser.add_argument("--cmd",default='',
+parser.add_argument("cmd", nargs=argparse.REMAINDER,
                     help='command to run after setting up container. '
                          'Often used for testing.')
 
 args = parser.parse_args()
 
+if os.getcwd() != "/home/yoctouser":
+    # --workdir was given to the docker command, not to us, so
+    # we need to pretend it was given to us...
+    args.workdir = os.getcwd()
 
 idargs = ""
 if args.id:
@@ -51,7 +55,9 @@ elif args.workdir == '/home/pokyuser':
     idargs = "--uid=1000 --gid=1000"
 
 cmd = """usersetup.py --username=pokyuser --workdir={wd}
-         {idargs} poky-launch.sh {wd} {cmd}""" \
-             .format(wd=args.workdir, idargs=idargs,cmd=args.cmd)
+         {idargs} poky-launch.sh {wd}""" \
+             .format(wd=args.workdir, idargs=idargs)
 cmd = cmd.split()
+if args.cmd:
+    cmd.extend(args.cmd)
 os.execvp(cmd[0], cmd)
