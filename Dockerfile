@@ -24,11 +24,15 @@ ADD https://raw.githubusercontent.com/crops/extsdk-container/master/restrict_use
 COPY poky-entry.py poky-launch.sh /usr/bin/
 COPY sudoers.usersetup /etc/
 
+RUN which dash &> /dev/null && (\
+    echo "dash dash/sh boolean false" | debconf-set-selections && \
+    DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash) || \
+    echo "Skipping dash reconfigure (not applicable)"
+
 # We remove the user because we add a new one of our own.
 # The usersetup user is solely for adding a new user that has the same uid,
 # as the workspace. 70 is an arbitrary *low* unused uid on debian.
-#RUN chown -R 1000:1000 /workdir && \
- RUN userdel -r yoctouser && \
+RUN userdel -r yoctouser && \
     groupadd -g 70 usersetup && \
     useradd -N -m -u 70 -g 70 usersetup && \
     chmod 755 /usr/bin/usersetup.py \
@@ -38,7 +42,6 @@ COPY sudoers.usersetup /etc/
         /usr/bin/restrict_useradd.sh && \
     echo "#include /etc/sudoers.usersetup" >> /etc/sudoers
 
-#RUN git clone git@192.168.133.170:oss_fork/rnd-poky.git  
 
 USER usersetup
 ENV LANG=en_US.UTF-8
