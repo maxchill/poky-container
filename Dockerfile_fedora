@@ -74,8 +74,9 @@ RUN echo "proxy=http://192.168.133.1:3128" >> /etc/dnf/dnf.conf && \
     chmod 0600 /etc/vncskel/.vnc/passwd && \
     useradd -U -m yoctouser
 
-# qemu 
-# qemu-kvm 
+    RUN dnf -y install \
+        qemu \
+	qemu-kvm 
 
 
 COPY build-install-dumb-init.sh /

@@ -13,7 +13,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-FROM crops/yocto:ubuntu-18.04-base
+FROM crops/yocto:fedora-30-base
 
 USER root
 
@@ -23,6 +23,11 @@ ADD https://raw.githubusercontent.com/crops/extsdk-container/master/restrict_use
         /usr/bin/
 COPY poky-entry.py poky-launch.sh /usr/bin/
 COPY sudoers.usersetup /etc/
+
+RUN echo "proxy=http://192.168.133.1:3128" >> /etc/dnf/dnf.conf && \
+    dnf -y update && \
+    dnf install -y qemu qemu-kvm && \
+    dnf -y clean all
 
 # For ubuntu, do not use dash.
 RUN which dash &> /dev/null && (\
