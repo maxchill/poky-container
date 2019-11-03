@@ -55,4 +55,47 @@ for i in run-*.sh; do
     fi
     rm $LOCAL_WDIR -rf
 done
+
+# Verify that each argument is preserved as expected
+echo Running Argument Test
+# make temporary workdir
+LOCAL_WDIR=$(mktemp -d  wdir_XXXXX)
+# get absolute path to it
+LOCAL_WDIR=$(readlink -f ${LOCAL_WDIR})
+cp check_args.py $LOCAL_WDIR
+
+docker run --rm -t -v $LOCAL_WDIR:/workdir \
+    $IMAGE \
+    --workdir /workdir \
+    python /workdir/check_args.py \
+    arg1 "second argument passed" "third arg" arg4 "this is the last argument"
+
+RET=$?
+if [ ${RET} != 0 ]; then
+    echo "Test \"Argument Test\" failed"
+    echo "Workdir located in $LOCAL_WDIR"
+    exit ${RET}
+fi
+rm $LOCAL_WDIR -rf
+
+# Verify that the PATH is preserved
+echo Running PATH Test
+# make temporary workdir
+LOCAL_WDIR=$(mktemp -d  wdir_XXXXX)
+# get absolute path to it
+LOCAL_WDIR=$(readlink -f ${LOCAL_WDIR})
+cp check-path.sh $LOCAL_WDIR
+
+docker run --rm -t -v $LOCAL_WDIR:/workdir --user=root \
+    --entrypoint="/workdir/check-path.sh" \
+    $IMAGE
+
+RET=$?
+if [ ${RET} != 0 ]; then
+    echo "Test \"PATH Test\" failed"
+    echo "Workdir located in $LOCAL_WDIR"
+    exit ${RET}
+fi
+rm $LOCAL_WDIR -rf
+
 echo "All tests PASSED"
