@@ -13,7 +13,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-FROM crops/yocto:fedora-30-base
+FROM crops/yocto:ubuntu-18.04-base
 
 USER root
 
@@ -21,13 +21,8 @@ ADD https://raw.githubusercontent.com/crops/extsdk-container/master/restrict_use
         https://raw.githubusercontent.com/crops/extsdk-container/master/restrict_groupadd.sh \
         https://raw.githubusercontent.com/crops/extsdk-container/master/usersetup.py \
         /usr/bin/
-COPY poky-entry.py poky-launch.sh /usr/bin/
+COPY distro-entry.sh poky-entry.py poky-launch.sh /usr/bin/
 COPY sudoers.usersetup /etc/
-
-RUN echo "proxy=http://192.168.133.1:3128" >> /etc/dnf/dnf.conf && \
-    dnf -y update && \
-    dnf install -y qemu qemu-kvm && \
-    dnf -y clean all
 
 # For ubuntu, do not use dash.
 RUN which dash &> /dev/null && (\
@@ -48,8 +43,8 @@ RUN userdel -r yoctouser && \
         /usr/bin/restrict_useradd.sh && \
     echo "#include /etc/sudoers.usersetup" >> /etc/sudoers
 
-
 USER usersetup
 ENV LANG=en_US.UTF-8
 
-ENTRYPOINT ["/usr/bin/dumb-init", "--", "/usr/bin/poky-entry.py"]
+ENTRYPOINT ["/usr/bin/distro-entry.sh", "/usr/bin/dumb-init", "--", "/usr/bin/poky-entry.py"]
+
